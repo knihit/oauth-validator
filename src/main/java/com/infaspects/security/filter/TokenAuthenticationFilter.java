@@ -2,6 +2,7 @@ package com.infaspects.security.filter;
 
 import com.infaspects.security.util.TokenValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -17,9 +18,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (tokenValidator.validateToken(request)) {
+            chain.doFilter(request, response);
             //Authentication authentication = this.authenticationProvider.authenticate();
             //SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            SecurityContextHolder.clearContext();
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "The token is not valid.");
         }
-        chain.doFilter(request, response);
     }
 }
